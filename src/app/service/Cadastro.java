@@ -1,5 +1,6 @@
 import java.util.ArrayList;
 import java.util.Scanner;
+import java.util.Iterator;
 
 public class Cadastro {
     static Scanner sc = new Scanner(System.in);
@@ -11,7 +12,9 @@ public class Cadastro {
         System.out.println("1 - Cadastrar Pessoa");
         System.out.println("2 - Listar Pessoas");
         System.out.println("3 - Buscar por nome");
-        System.out.println("4 - Maiores de idade");
+        System.out.println("4 - Buscar por CPF");
+        System.out.println("5 - Atualizar dados");
+        System.out.println("6 - Excluir pessoa");
         System.out.println("0 - Sair");
 
         int opcao = sc.nextInt();
@@ -34,7 +37,15 @@ public class Cadastro {
             break;
 
         case 4:
-            maioresDeIdade();
+            buscarPorCpf();
+            break;
+        
+        case 5:
+            atualizarDados();
+            break;
+        
+        case 6:
+            excluirPessoa();
             break;
 
             default:
@@ -105,13 +116,38 @@ public class Cadastro {
         }
     }
 
+    public static boolean cpfJaExiste(String cpf){
+        for (Pessoa p : pessoas){
+            if(p.getCpf().equals(cpf)){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static boolean listaVazia(){
+        if(pessoas.isEmpty()){
+            System.out.println("Não tem pessoas cadastradas.");
+            return true;
+        }
+        return false;
+    }
+
     public static void cadastrarPessoa(){
         
         String nome = lerStringObrigatoria("Digite o nome da pessoa: ");
         
         int idade = lerInteiroPositivo("Digite a idade da pessoa: ");
 
-        String cpf = lerCpfValido();
+        String cpf;
+
+        do{
+            cpf = lerCpfValido();
+            if(cpfJaExiste(cpf)){
+                System.out.println("CPF já cadastrado!");
+            }
+        }
+        while (cpfJaExiste(cpf));
         
         Pessoa p = new Pessoa(nome, idade, cpf);
         pessoas.add(p);
@@ -121,8 +157,7 @@ public class Cadastro {
 
     public static void listarPessoas(){
         
-        if(pessoas.isEmpty()){
-            System.out.println("Não tem pessoas cadastradas.");
+        if(listaVazia()){
             return;
         }
 
@@ -133,8 +168,7 @@ public class Cadastro {
 
     public static void buscarPorNome(){
         
-        if(pessoas.isEmpty()){
-            System.out.println("Não tem pessoas cadastradas.");
+        if(listaVazia()){
             return;
         }
         
@@ -154,17 +188,85 @@ public class Cadastro {
         }
     }
 
-    public static void maioresDeIdade(){
-        boolean temMaiores = false;
+    public static void buscarPorCpf(){
+        if(listaVazia()){
+            return;
+        }
+
+        String cpf = lerCpfValido();
         
         for (Pessoa p : pessoas){
-            if (p.maiorIdade()){
-                System.out.println("Nome: " + p.getNome() + ", Idade: " + p.getIdade() + ", CPF: " + p.getCpf());
-                temMaiores = true;
+            if (p.getCpf().equals(cpf)){
+                System.out.println("Nome: " + p.getNome());
+                System.out.println("Idade: " + p.getIdade());
+                System.out.println("CPF encontrado: " + p.getCpf());
+                return;
+
             }
         }
-            if (!temMaiores){
-                System.out.println("Não tem pessoas maiores de idade");
+        
+        System.out.println("CPF não encontrado.");
+        }
+        
+    public static void atualizarDados(){
+        if(listaVazia()){
+            return;
+        }
+        System.out.println("Digite o nome da pessoa que deseja atualizar: ");
+        String nome = sc.nextLine();
+        boolean encontrado = false;
+
+        for (Pessoa p : pessoas){
+            if(p.getNome().equalsIgnoreCase(nome)){
+                System.out.println("Digite o novo nome: ");
+                String novoNome = sc.nextLine();
+                System.out.println("Digite a nova idade: ");
+                int novaIdade = sc.nextInt();
+                sc.nextLine();
+                System.out.println("Digite o novo CPF: ");
+                String novoCpf = sc.nextLine();
+
+                p.setNome(novoNome);
+                p.setIdade(novaIdade);
+                do{
+                    if(cpfJaExiste(novoCpf)){
+                        System.out.println("CPF já cadastrado!");
+                    }
+                }
+                while (cpfJaExiste(novoCpf));
+                p.setCpf(novoCpf);
+                encontrado = true;
+                break;
+            }
+
+        }
+        if(!encontrado){
+            System.out.println("Pessoa não encontrada.");
+        }
+    }
+
+    public static void excluirPessoa(){
+        
+        if(listaVazia()){
+            return;
+        }
+        System.out.println("Digite o nome da pessoa que deseja excluir: ");
+        Iterator<Pessoa> iterator = pessoas.iterator();
+        String nome = sc.nextLine();
+        boolean encontrado = false;
+
+         while(iterator.hasNext()){
+            Pessoa p = iterator.next();
+            if(p.getNome().equalsIgnoreCase(nome)){
+                iterator.remove();
+                System.out.println("Pessoa excluída com sucesso!");
+                encontrado = true;
+                break;
+        }
+            if(!encontrado){
+                System.out.println("Pessoa não encontrada.");
             }
         }
     }
+}
+
